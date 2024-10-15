@@ -40,7 +40,7 @@ services:
     depends_on:
       - db
       - cache
-    command: moonbot -a "" -c 10000 -l "https://i.ibb.co/FD5ThnN/image.png"
+    command: moonbot -a "" -c 10000 -l ""
     environment:
       DEBUG: ${DEBUG}
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/advertiser?sslmode=disable"
