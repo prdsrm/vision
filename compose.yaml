@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15.6-alpine
+    # NOTE: more connections = more RAM usage
+    command: -c 'max_connections=1000'
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=advertiser
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+  pumpbot:
+    build:
+      context: ./
+    image: advertiser:latest
+    depends_on:
+      - db
+      - cache
+    command: pumpbot -a "" -c 10000 -l ""
+    environment:
+      DEBUG: ${DEBUG}
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/advertiser?sslmode=disable"
+      REDIS_URL: "redis://cache:6379"
+    links:
+      - db
+      - cache
+    volumes:
+      - pumpbot:/data
+    env_file: ".env"
+
+  moonbot:
+    build:
+      context: ./
+    image: advertiser:latest
+    depends_on:
+      - db
+      - cache
+    command: moonbot -a "" -c 10000 -l "https://i.ibb.co/FD5ThnN/image.png"
+    environment:
+      DEBUG: ${DEBUG}
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/advertiser?sslmode=disable"
+      REDIS_URL: "redis://cache:6379"
+    links:
+      - db
+      - cache
+    volumes:
+      - moonbot:/data
+    env_file: ".env"
+
+volumes:
+  db:
+    driver: local
+  pumpbot:
+    driver: local
+  moonbot:
+    driver: local
